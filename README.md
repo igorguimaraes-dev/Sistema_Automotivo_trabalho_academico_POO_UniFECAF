@@ -1,6 +1,6 @@
 # Sistema Automotivo — Gestão de Estoque de Veículos
 
-Trabalho de Object Oriented Programming — UniFECAF. API REST orientada a objetos para cadastrar, consultar, filtrar, atualizar e remover veículos, com persistência em MySQL.
+Trabalho de Object Oriented Programming — UniFECAF. Sistema web em Java para cadastrar, consultar, filtrar, atualizar e remover veículos, com interface Vaadin, API REST e persistência em MySQL.
 
 ## Funcionalidades
 
@@ -12,13 +12,13 @@ Trabalho de Object Oriented Programming — UniFECAF. API REST orientada a objet
 
 ## Tecnologias e arquitetura
 
-Java 21, Spring Boot 4.1.2, Spring Web MVC, Spring Data JPA, Jakarta Validation e MySQL 8.4. A API está organizada em `controller`, `service`, `repository`, `model`, `dto` e `exception`. As entidades herdam a identificação de `EntidadeBase`; campos privados e métodos de alteração protegem as regras do veículo.
+Java 21, Spring Boot 4.1.2, Vaadin Flow 25.3.4, Spring Web MVC, Spring Data JPA, Jakarta Validation e MySQL 8.4. As telas estão em `view`, escritas em componentes Java, com CSS para a aparência. A API está organizada em `controller`, `service`, `repository`, `model`, `dto` e `exception`. A interface e a API utilizam os mesmos services. As entidades herdam a identificação de `EntidadeBase`; campos privados e métodos de alteração protegem as regras do veículo.
 
-O frontend é opcional no enunciado e não integra esta entrega. A API pode ser utilizada por um cliente HTTP, como Postman. A coleção de requisições está em `postman/`.
+O frontend opcional foi implementado com três telas: Veículos, Marcas e Modelos. A API também pode ser utilizada por um cliente HTTP, como Postman. A coleção de requisições está em `postman/`.
 
 ## Execução no Windows/PowerShell
 
-Pré-requisitos: JDK 21 e MySQL Server 8.4. Docker Desktop pode fornecer o MySQL, conforme a alternativa abaixo. O Maven Wrapper está incluído; o primeiro uso precisa de internet para baixar dependências.
+Pré-requisitos: JDK 21 e MySQL Server 8.4. Para compilar os recursos visuais, utilize Node.js 24 ou superior; o Vaadin pode baixar a versão compatível quando necessário. Docker Desktop pode fornecer o MySQL, conforme a alternativa abaixo. O Maven Wrapper está incluído; o primeiro uso precisa de internet para baixar dependências.
 
 Abra um terminal **na pasta deste README, que contém `pom.xml`**. Confira `java -version` e configure `JAVA_HOME` para o seu JDK 21, se necessário.
 
@@ -58,7 +58,11 @@ A aplicação executa `database/schema.sql` para criar as tabelas que ainda não
 
 ### Endereço
 
-API: `http://localhost:8080/api`. Exemplo inicial: `GET http://localhost:8080/api/marcas` retorna `[]` em banco vazio. A raiz `/` não é uma tela do sistema. `PORT` pode alterar a porta HTTP; ajuste também a variável `baseUrl` da coleção.
+Interface: **http://localhost:8080/**. A página inicial exibe o estoque. O menu dá acesso a **Marcas** (`/marcas`) e **Modelos** (`/modelos`). `PORT` pode alterar a porta HTTP; ajuste também a variável `baseUrl` da coleção.
+
+Para começar, cadastre uma marca, cadastre um modelo dessa marca e clique em **Novo veículo**. Os filtros podem ser combinados e limpos. **Editar** permite alterar preço, quilometragem e disponibilidade. **Excluir** exige confirmação e fica disponível para veículos vendidos ou descontinuados. Nos campos monetários da interface, use vírgula para os centavos, por exemplo `75000,50`.
+
+API: `http://localhost:8080/api`. Exemplo: `GET http://localhost:8080/api/marcas` retorna `[]` em banco vazio. Em JSON, números continuam usando ponto decimal, conforme os exemplos abaixo.
 
 ## Endpoints
 
@@ -112,17 +116,19 @@ Os testes exercitam HTTP e MySQL reais. **Eles apagam os registros somente do ba
 Com o banco iniciado pelo Compose e `DB_PASSWORD` definido, encerre a API com `Ctrl+C` antes de recompilar, especialmente se estiver executando o JAR no Windows:
 
 ```powershell
-.\mvnw.cmd clean verify
+.\mvnw.cmd -Pproduction clean verify
 ```
 
 Se usar outro MySQL, crie previamente `estoque_veiculos_test`, conceda acesso ao usuário de `DB_USER` e configure:
 
 ```powershell
 $env:TEST_DB_URL = 'jdbc:mysql://localhost:3306/estoque_veiculos_test'
-.\mvnw.cmd clean verify
+.\mvnw.cmd -Pproduction clean verify
 ```
 
-Os quatro cenários cobrem CRUD e dados salvos, filtros isolados/combinados, entradas inválidas e associações/duplicidades. Os relatórios do Maven ficam em `target/surefire-reports/`. Após o build, também é possível executar:
+Os quatro cenários de integração cobrem CRUD e dados salvos, filtros isolados/combinados, entradas inválidas e associações/duplicidades. Um teste adicional verifica a mensagem amigável quando não é possível abrir a transação com o banco. A interface também foi verificada em navegador real, incluindo cancelamento, confirmação de exclusão, valores monetários e largura de celular. Os relatórios do Maven ficam em `target/surefire-reports/`.
+
+O perfil `production` empacota os recursos visuais, sem as ferramentas de desenvolvimento do Vaadin. Após o build, execute com as mesmas variáveis de conexão:
 
 ```powershell
 java -jar target/sistema-automotivo-0.0.1-SNAPSHOT.jar
@@ -135,4 +141,4 @@ java -jar target/sistema-automotivo-0.0.1-SNAPSHOT.jar
 - [Vídeo pitch no YouTube](https://youtu.be/nzAiVEuqOuE), com execução real da API e narração sintética. [Arquivo MP4](docs/pitch.mp4).
 - [Código-fonte público](https://github.com/igorguimaraes-dev/sistema-automotivo-poo).
 
-As capturas e o vídeo usam um cliente HTTP local para demonstrar a API. Esse cliente é uma ferramenta de teste, não um frontend entregue. Não foram implementados login, vendas financeiras ou funcionalidades externas à gestão de estoque solicitada.
+O vídeo original demonstra a API por cliente HTTP. O relatório prático também contém capturas da interface Java implementada posteriormente. Não foram implementados login, vendas financeiras ou funcionalidades externas à gestão de estoque solicitada.

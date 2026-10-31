@@ -22,9 +22,9 @@ public final class Dados {
     public record ModeloSaida(Long id, String nome, MarcaSaida marca) { }
 
     public record VeiculoEntrada(
-            @NotNull(message = "Modelo é obrigatório.") @Positive Long modeloId,
-            @NotNull(message = "Ano é obrigatório.") @Min(1886) Integer anoFabricacao,
-            @NotBlank(message = "Cor é obrigatória.") @Size(max = 50) String cor,
+            @NotNull(message = "Modelo é obrigatório.") @Positive(message = "ID do modelo deve ser positivo.") Long modeloId,
+            @NotNull(message = "Ano é obrigatório.") @Min(value = 1886, message = "Ano deve ser igual ou maior que 1886.") Integer anoFabricacao,
+            @NotBlank(message = "Cor é obrigatória.") @Size(max = 50, message = "Cor deve ter até 50 caracteres.") String cor,
             @NotNull(message = "Preço é obrigatório.")
             @DecimalMin(value = "0.01", message = "Preço deve ser maior que zero.")
             @Digits(integer = 10, fraction = 2, message = "Preço aceita até 10 inteiros e 2 decimais.") BigDecimal preco,
