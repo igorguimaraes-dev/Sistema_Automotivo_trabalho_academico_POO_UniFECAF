@@ -1,0 +1,332 @@
+{
+  "info": {
+    "name": "Sistema Automotivo",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "marcaId",
+      "value": ""
+    },
+    {
+      "key": "modeloId",
+      "value": ""
+    },
+    {
+      "key": "veiculoId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Cadastrar marca",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/marcas",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Toyota\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"marcaId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Listar marcas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/marcas"
+      }
+    },
+    {
+      "name": "03 - Cadastrar modelo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/modelos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Corolla\",\n  \"marcaId\": {{marcaId}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"modeloId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Listar modelos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/modelos"
+      }
+    },
+    {
+      "name": "05 - Cadastrar veiculo",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"modeloId\": {{modeloId}},\n  \"anoFabricacao\": 2022,\n  \"cor\": \"Prata\",\n  \"preco\": 110000,\n  \"quilometragem\": 35000,\n  \"status\": \"DISPONIVEL\",\n  \"tipo\": \"CARRO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set(\"veiculoId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Listar veiculos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos"
+      }
+    },
+    {
+      "name": "07 - Consultar por ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos/{{veiculoId}}"
+      }
+    },
+    {
+      "name": "Filtro - marca",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos?marcaId={{marcaId}}"
+      }
+    },
+    {
+      "name": "Filtro - modelo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos?modeloId={{modeloId}}"
+      }
+    },
+    {
+      "name": "Filtro - preco",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos?precoMin=100000&precoMax=120000"
+      }
+    },
+    {
+      "name": "Filtro - ano",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos?ano=2022"
+      }
+    },
+    {
+      "name": "Filtro - status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos?status=DISPONIVEL"
+      }
+    },
+    {
+      "name": "Filtro - tipo",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos?tipo=CARRO"
+      }
+    },
+    {
+      "name": "Filtro - combinado",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos?marcaId={{marcaId}}&modeloId={{modeloId}}&precoMin=100000&precoMax=120000&ano=2022&status=DISPONIVEL&tipo=CARRO"
+      }
+    },
+    {
+      "name": "08 - Atualizar veiculo",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos/{{veiculoId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"preco\": 108000.5,\n  \"quilometragem\": 36000,\n  \"status\": \"VENDIDO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "09 - Confirmar atualizacao",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos/{{veiculoId}}"
+      }
+    },
+    {
+      "name": "10 - Excluir vendido",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos/{{veiculoId}}"
+      }
+    },
+    {
+      "name": "11 - Confirmar exclusao (404)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/veiculos/{{veiculoId}}"
+      }
+    }
+  ]
+}
