@@ -1,4 +1,4 @@
-# Sistema Automotivo — Gestão de Estoque de Veículos
+# Sistema_Automotivo_trabalho_academico
 
 Trabalho de Object Oriented Programming — UniFECAF. Sistema web em Java para cadastrar, consultar, filtrar, atualizar e remover veículos, com interface Vaadin, API REST e persistência em MySQL.
 
@@ -140,6 +140,6 @@ java -jar target/sistema-automotivo-0.0.1-SNAPSHOT.jar
 - [Relatório teórico](docs/relatorio-teorico.pdf).
 - [Evidências práticas e códigos principais](docs/evidencias-praticas.pdf).
 - [Vídeo pitch no YouTube](https://youtu.be/nzAiVEuqOuE), com execução real da API e narração sintética. [Arquivo MP4](docs/pitch.mp4).
-- [Código-fonte público](https://github.com/igorguimaraes-dev/sistema-automotivo-poo).
+- [Código-fonte público](https://github.com/igorguimaraes-dev/Sistema_Automotivo_trabalho_academico).
 
 O vídeo original demonstra a API por cliente HTTP. O relatório prático também contém capturas da interface Java implementada posteriormente. Não foram implementados login, vendas financeiras ou funcionalidades externas à gestão de estoque solicitada.
