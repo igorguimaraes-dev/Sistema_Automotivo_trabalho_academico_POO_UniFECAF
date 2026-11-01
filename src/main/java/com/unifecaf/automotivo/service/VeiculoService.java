@@ -63,6 +63,16 @@ public class VeiculoService {
     }
 
     @Transactional
+    public VeiculoSaida atualizarCompleto(Long id, VeiculoEntrada dados) {
+        Veiculo veiculo = buscar(id);
+        Modelo modelo = modelos.findById(dados.modeloId())
+                .orElseThrow(() -> new RegraException(NOT_FOUND, "Modelo não encontrado."));
+        veiculo.atualizarDados(modelo, dados.anoFabricacao(), dados.cor(), dados.preco(),
+                dados.quilometragem(), dados.status(), dados.tipo());
+        return saida(veiculos.save(veiculo));
+    }
+
+    @Transactional
     public void remover(Long id) {
         Veiculo veiculo = buscar(id);
         if (!veiculo.podeSerRemovido())

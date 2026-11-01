@@ -43,7 +43,7 @@ public class VeiculosView extends Div {
         configurarFiltros();
         configurarTabela();
         quantidade.addClassName("list-count");
-        Span instrucao = new Span("Edite para atualizar preço, quilometragem e disponibilidade.");
+        Span instrucao = new Span("Edite as características e a disponibilidade dos veículos.");
         instrucao.addClassName("list-hint");
         Div listHeader = new Div(quantidade, instrucao);
         listHeader.addClassName("list-header");

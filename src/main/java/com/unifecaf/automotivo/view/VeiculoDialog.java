@@ -45,68 +45,69 @@ class VeiculoDialog extends Dialog {
         TextField cor = new TextField("Cor");
         ComboBox<TipoVeiculo> tipo = new ComboBox<>("Tipo de veículo");
 
+        marca.setItemLabelGenerator(MarcaSaida::nome);
+        marca.setPlaceholder("Selecione a marca");
+        marca.setRequiredIndicatorVisible(true);
+        modelo.setItemLabelGenerator(ModeloSaida::nome);
+        modelo.setPlaceholder("Selecione primeiro a marca");
+        modelo.setRequiredIndicatorVisible(true);
+        modelo.setEnabled(false);
+        UiSupport.executar(erro, () -> {
+            var modelos = catalogo.listarModelos();
+            var marcas = catalogo.listarMarcas();
+            marca.setItems(marcas);
+            marca.addValueChangeListener(e -> {
+                modelo.clear();
+                var opcoes = modelos.stream().filter(m -> e.getValue() != null
+                        && m.marca().id().equals(e.getValue().id())).toList();
+                modelo.setItems(opcoes);
+                modelo.setEnabled(!opcoes.isEmpty());
+                modelo.setHelperText(e.getValue() != null && opcoes.isEmpty()
+                        ? "Cadastre um modelo para esta marca na tela Modelos." : "");
+            });
+            if (edicao) {
+                marca.setValue(marcas.stream().filter(m -> m.id().equals(existente.marca().id())).findFirst().orElse(null));
+                modelo.setValue(modelos.stream().filter(m -> m.id().equals(existente.modelo().id())).findFirst().orElse(null));
+            }
+        });
+        ano.setMin(1886);
+        ano.setMax(java.time.Year.now().getValue());
+        ano.setRequiredIndicatorVisible(true);
+        ano.setPlaceholder("Ex.: 2022");
+        cor.setMaxLength(50);
+        cor.setRequiredIndicatorVisible(true);
+        cor.setPlaceholder("Ex.: Prata");
+        tipo.setItems(TipoVeiculo.values());
+        tipo.setItemLabelGenerator(UiSupport::tipo);
+        tipo.setRequiredIndicatorVisible(true);
         if (edicao) {
-            Paragraph resumo = new Paragraph(existente.marca().nome() + " " + existente.modelo().nome()
-                    + " · " + existente.anoFabricacao() + " · " + existente.cor());
-            resumo.addClassName("dialog-summary");
-            add(resumo, new Paragraph("Atualize o preço, a quilometragem e a disponibilidade deste veículo."));
+            add(new Paragraph("Atualize as características e a disponibilidade deste veículo."));
+            ano.setValue(existente.anoFabricacao());
+            cor.setValue(existente.cor());
+            tipo.setValue(existente.tipo());
             preco.setValue(existente.preco());
             km.setValue(existente.quilometragem());
             status.setValue(existente.status());
         } else {
-            marca.setItemLabelGenerator(MarcaSaida::nome);
-            marca.setPlaceholder("Selecione a marca");
-            marca.setRequiredIndicatorVisible(true);
-            modelo.setItemLabelGenerator(ModeloSaida::nome);
-            modelo.setPlaceholder("Selecione primeiro a marca");
-            modelo.setRequiredIndicatorVisible(true);
-            modelo.setEnabled(false);
-            UiSupport.executar(erro, () -> {
-                var modelos = catalogo.listarModelos();
-                marca.setItems(catalogo.listarMarcas());
-                marca.addValueChangeListener(e -> {
-                    modelo.clear();
-                    var opcoes = modelos.stream().filter(m -> e.getValue() != null
-                            && m.marca().id().equals(e.getValue().id())).toList();
-                    modelo.setItems(opcoes);
-                    modelo.setEnabled(!opcoes.isEmpty());
-                    modelo.setHelperText(e.getValue() != null && opcoes.isEmpty()
-                            ? "Cadastre um modelo para esta marca na tela Modelos." : "");
-                });
-            });
-            ano.setMin(1886);
-            ano.setMax(java.time.Year.now().getValue());
-            ano.setRequiredIndicatorVisible(true);
-            ano.setPlaceholder("Ex.: 2022");
-            cor.setMaxLength(50);
-            cor.setRequiredIndicatorVisible(true);
-            cor.setPlaceholder("Ex.: Prata");
-            tipo.setItems(TipoVeiculo.values());
-            tipo.setItemLabelGenerator(UiSupport::tipo);
-            tipo.setRequiredIndicatorVisible(true);
             status.setValue(StatusVeiculo.DISPONIVEL);
             km.setValue(0);
-            form.add(marca, modelo, ano, cor, tipo);
         }
-        form.add(preco, km, status);
+        form.add(marca, modelo, ano, cor, tipo, preco, km, status);
         form.getChildren().forEach(c -> c.getElement().getStyle().set("width", "100%"));
         add(form, erro);
         Button salvar = UiSupport.principal(edicao ? "Salvar alterações" : "Cadastrar veículo", () -> {
             erro.setVisible(false);
-            if (edicao) {
-                AtualizacaoVeiculo dados = new AtualizacaoVeiculo(preco.getValue(), km.getValue(), status.getValue());
-                if (!UiSupport.validar(validator, dados, Map.of("preco", preco, "quilometragem", km, "status", status))) return;
-                if (!UiSupport.executar(erro, () -> service.atualizar(existente.id(), dados))) return;
-            } else {
-                VeiculoEntrada dados = new VeiculoEntrada(modelo.getValue() == null ? null : modelo.getValue().id(),
-                        ano.getValue(), cor.getValue(), preco.getValue(), km.getValue(), status.getValue(), tipo.getValue());
-                marca.setInvalid(marca.isEmpty());
-                marca.setErrorMessage("Selecione a marca.");
-                boolean valido = UiSupport.validar(validator, dados, Map.of("modeloId", modelo, "anoFabricacao", ano,
-                        "cor", cor, "preco", preco, "quilometragem", km, "status", status, "tipo", tipo));
-                if (!valido || marca.isEmpty()) return;
-                if (!UiSupport.executar(erro, () -> service.cadastrar(dados))) return;
-            }
+            VeiculoEntrada dados = new VeiculoEntrada(modelo.getValue() == null ? null : modelo.getValue().id(),
+                    ano.getValue(), cor.getValue(), preco.getValue(), km.getValue(), status.getValue(), tipo.getValue());
+            marca.setInvalid(marca.isEmpty());
+            marca.setErrorMessage("Selecione a marca.");
+            boolean valido = UiSupport.validar(validator, dados, Map.of("modeloId", modelo, "anoFabricacao", ano,
+                    "cor", cor, "preco", preco, "quilometragem", km, "status", status, "tipo", tipo));
+            if (!valido || marca.isEmpty()) return;
+            if (!UiSupport.executar(erro, () -> {
+                if (edicao) service.atualizarCompleto(existente.id(), dados);
+                else service.cadastrar(dados);
+            })) return;
             close();
             aoSalvar.run();
             UiSupport.sucesso(edicao ? "Veículo atualizado." : "Veículo cadastrado.");

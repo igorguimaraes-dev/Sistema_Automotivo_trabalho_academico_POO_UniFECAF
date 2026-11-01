@@ -34,16 +34,21 @@ public class Veiculo extends EntidadeBase {
 
     public Veiculo(Modelo modelo, Integer anoFabricacao, String cor, BigDecimal preco,
                    Integer quilometragem, StatusVeiculo status, TipoVeiculo tipo) {
+        atualizarDados(modelo, anoFabricacao, cor, preco, quilometragem, status, tipo);
+    }
+
+    public void atualizarDados(Modelo modelo, Integer anoFabricacao, String cor, BigDecimal preco,
+                              Integer quilometragem, StatusVeiculo status, TipoVeiculo tipo) {
         if (modelo == null || tipo == null) throw new IllegalArgumentException("Modelo e tipo são obrigatórios.");
         if (anoFabricacao == null || anoFabricacao < 1886 || anoFabricacao > Year.now().getValue())
             throw new IllegalArgumentException("Ano de fabricação deve estar entre 1886 e o ano atual.");
         if (cor == null || cor.isBlank() || cor.strip().length() > 50)
             throw new IllegalArgumentException("Informe uma cor de até 50 caracteres.");
+        atualizarDadosComerciais(preco, quilometragem, status);
         this.modelo = modelo;
         this.anoFabricacao = anoFabricacao;
         this.cor = cor.strip();
         this.tipo = tipo;
-        atualizarDadosComerciais(preco, quilometragem, status);
     }
 
     public void atualizarDadosComerciais(BigDecimal preco, Integer quilometragem, StatusVeiculo status) {

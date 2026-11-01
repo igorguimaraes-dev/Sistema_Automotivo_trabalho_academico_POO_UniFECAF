@@ -7,7 +7,7 @@ Trabalho de Object Oriented Programming — UniFECAF. Sistema web em Java para c
 - Cadastro e listagem de marcas e de modelos associados às marcas.
 - Cadastro de veículos com modelo, marca obtida pelo modelo, ano de fabricação, cor, preço, quilometragem, status e tipo.
 - Consulta geral e por ID; filtros por marca, modelo, faixa de preço, ano, status e tipo, isolados ou combinados.
-- Atualização de preço, quilometragem e status.
+- Edição de marca/modelo, ano de fabricação, cor, tipo, preço, quilometragem e status.
 - Exclusão de veículos vendidos ou descontinuados.
 
 ## Tecnologias e arquitetura
@@ -60,7 +60,7 @@ A aplicação executa `database/schema.sql` para criar as tabelas que ainda não
 
 Interface: **http://localhost:8080/**. A página inicial exibe o estoque. O menu dá acesso a **Marcas** (`/marcas`) e **Modelos** (`/modelos`). `PORT` pode alterar a porta HTTP; ajuste também a variável `baseUrl` da coleção.
 
-Para começar, cadastre uma marca, cadastre um modelo dessa marca e clique em **Novo veículo**. Os filtros podem ser combinados e limpos. **Editar** permite alterar preço, quilometragem e disponibilidade. **Excluir** exige confirmação e fica disponível para veículos vendidos ou descontinuados. Nos campos monetários da interface, use vírgula para os centavos, por exemplo `75000,50`.
+Para começar, cadastre uma marca, cadastre um modelo dessa marca e clique em **Novo veículo**. Os filtros podem ser combinados e limpos. **Editar** abre todos os dados já preenchidos e permite alterar marca/modelo, ano, cor, tipo, preço, quilometragem e disponibilidade. Ao trocar a marca, selecione um modelo dela. **Excluir** exige confirmação e fica disponível para veículos vendidos ou descontinuados. Nos campos monetários da interface, use vírgula para os centavos, por exemplo `75000,50`.
 
 API: `http://localhost:8080/api`. Exemplo: `GET http://localhost:8080/api/marcas` retorna `[]` em banco vazio. Em JSON, números continuam usando ponto decimal, conforme os exemplos abaixo.
 
@@ -73,6 +73,7 @@ API: `http://localhost:8080/api`. Exemplo: `GET http://localhost:8080/api/marcas
 | POST / GET | `/api/veiculos` | Cadastrar / listar e filtrar veículos |
 | GET | `/api/veiculos/{id}` | Consultar veículo |
 | PATCH | `/api/veiculos/{id}` | Atualizar preço, quilometragem e status |
+| PUT | `/api/veiculos/{id}` | Atualizar todas as características do veículo |
 | DELETE | `/api/veiculos/{id}` | Remover vendido ou descontinuado |
 
 ### Sequência de uso
@@ -101,7 +102,7 @@ Envie JSON com `Content-Type: application/json` e use os IDs realmente retornado
 
 Todos os filtros são opcionais; quando combinados, todos precisam ser atendidos. Limites de preço são inclusivos. Consulta sem correspondência retorna `[]`.
 
-O PATCH exige os três campos comerciais. Status aceitos: `DISPONIVEL`, `VENDIDO`, `DESCONTINUADO`. Tipos: `CARRO`, `MOTO`, `UTILITARIO`. Preço deve ser positivo, com até duas casas decimais; quilometragem deve ser inteira e não negativa. O ano de fabricação deve estar entre 1886 e o ano atual. A marca é derivada do modelo, evitando associações incompatíveis.
+O PATCH exige os três campos comerciais. Para editar todos os dados, envie `PUT /api/veiculos/{id}` com o mesmo formato JSON do cadastro, incluindo todos os campos. O ID do veículo é preservado. Status aceitos: `DISPONIVEL`, `VENDIDO`, `DESCONTINUADO`. Tipos: `CARRO`, `MOTO`, `UTILITARIO`. Preço deve ser positivo, com até duas casas decimais; quilometragem deve ser inteira e não negativa. O ano de fabricação deve estar entre 1886 e o ano atual. A marca é derivada do modelo, evitando associações incompatíveis.
 
 Entradas inválidas retornam 400; recurso inexistente, 404; duplicidade ou tentativa de excluir um disponível, 409. A exclusão não remove a marca ou o modelo associados. Marcar como vendido preserva o registro até uma exclusão explícita.
 
@@ -126,7 +127,7 @@ $env:TEST_DB_URL = 'jdbc:mysql://localhost:3306/estoque_veiculos_test'
 .\mvnw.cmd -Pproduction clean verify
 ```
 
-Os quatro cenários de integração cobrem CRUD e dados salvos, filtros isolados/combinados, entradas inválidas e associações/duplicidades. Um teste adicional verifica a mensagem amigável quando não é possível abrir a transação com o banco. A interface também foi verificada em navegador real, incluindo cancelamento, confirmação de exclusão, valores monetários e largura de celular. Os relatórios do Maven ficam em `target/surefire-reports/`.
+Os seis cenários de integração cobrem CRUD, filtros, entradas inválidas, associações e edição completa, incluindo preservação do ID e dos dados anteriores quando houver erro. Um teste adicional verifica a mensagem amigável quando não é possível abrir a transação com o banco. A interface também foi verificada em navegador real, incluindo edição de características, cancelamento, confirmação de exclusão, valores monetários e largura de celular. Os relatórios do Maven ficam em `target/surefire-reports/`.
 
 O perfil `production` empacota os recursos visuais, sem as ferramentas de desenvolvimento do Vaadin. Após o build, execute com as mesmas variáveis de conexão:
 

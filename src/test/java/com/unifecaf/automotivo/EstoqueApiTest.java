@@ -75,6 +75,44 @@ class EstoqueApiTest {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM veiculo", Long.class)).isZero();
     }
 
+    @Test void atualizacaoCompletaAlteraCaracteristicasSemCriarOutroVeiculo() throws Exception {
+        long honda = marca("Honda"), toyota = marca("Toyota");
+        long cg = modelo("CG 160", honda), corolla = modelo("Corolla", toyota);
+        long id = node(request("POST", "/veiculos", dados(cg, 2011, "15000", "DISPONIVEL", "MOTO")), 201).get("id").asLong();
+        String novosDados = dados(corolla, 2020, "90000.50", "VENDIDO", "CARRO")
+                .replace("Prata", "Preto").replace("35000", "42000");
+        var atualizado = node(request("PUT", "/veiculos/" + id, novosDados), 200);
+        assertThat(atualizado.get("id").asLong()).isEqualTo(id);
+        assertThat(atualizado.get("marca").get("id").asLong()).isEqualTo(toyota);
+        assertThat(atualizado.get("modelo").get("id").asLong()).isEqualTo(corolla);
+        assertThat(atualizado.get("anoFabricacao").asInt()).isEqualTo(2020);
+        assertThat(atualizado.get("cor").asText()).isEqualTo("Preto");
+        assertThat(atualizado.get("tipo").asText()).isEqualTo("CARRO");
+        assertThat(atualizado.get("preco").decimalValue()).isEqualByComparingTo("90000.50");
+        assertThat(atualizado.get("quilometragem").asInt()).isEqualTo(42000);
+        assertThat(atualizado.get("status").asText()).isEqualTo("VENDIDO");
+        assertThat(node(request("GET", "/veiculos/" + id, null), 200)).isEqualTo(atualizado);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM veiculo", Long.class)).isEqualTo(1L);
+        assertThat(jdbc.queryForObject("SELECT modelo_id FROM veiculo WHERE id=?", Long.class, id)).isEqualTo(corolla);
+        assertThat(node(request("GET", "/veiculos?marcaId=" + honda, null), 200).size()).isZero();
+        assertThat(node(request("GET", "/veiculos?marcaId=" + toyota + "&ano=2020", null), 200).size()).isEqualTo(1);
+    }
+
+    @Test void atualizacaoCompletaInvalidaPreservaTodosOsDadosAnteriores() throws Exception {
+        long mo = modelo("CG 160", marca("Honda"));
+        long id = node(request("POST", "/veiculos", dados(mo, 2011, "15000", "DISPONIVEL", "MOTO")), 201).get("id").asLong();
+        var anterior = node(request("GET", "/veiculos/" + id, null), 200);
+        String novo = dados(mo, 2020, "16000", "VENDIDO", "CARRO").replace("Prata", "Preto");
+        for (String invalido : new String[]{novo.replace("Preto", "  "), novo.replace("16000", "-1"),
+                novo.replace("2020", "3500"), "{}"}) {
+            node(request("PUT", "/veiculos/" + id, invalido), 400);
+            assertThat(node(request("GET", "/veiculos/" + id, null), 200)).isEqualTo(anterior);
+        }
+        node(request("PUT", "/veiculos/" + id, dados(999999999, 2020, "16000", "VENDIDO", "CARRO")), 404);
+        assertThat(node(request("GET", "/veiculos/" + id, null), 200)).isEqualTo(anterior);
+        node(request("PUT", "/veiculos/999999999", novo), 404);
+    }
+
     @Test void filtrosIsoladosECombinadosSelecionamOsVeiculosCorretos() throws Exception {
         long toyota = marca("Toyota"), fiat = marca("Fiat"), honda = marca("Honda");
         long corolla = modelo("Corolla", toyota), argo = modelo("Argo", fiat), cg = modelo("CG 160", honda);

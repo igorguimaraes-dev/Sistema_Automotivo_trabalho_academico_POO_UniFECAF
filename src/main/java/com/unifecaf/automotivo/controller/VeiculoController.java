@@ -43,4 +43,9 @@ public class VeiculoController {
         service.remover(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    public VeiculoSaida atualizarCompleto(@PathVariable Long id, @Valid @RequestBody VeiculoEntrada dados) {
+        return service.atualizarCompleto(id, dados);
+    }
 }
